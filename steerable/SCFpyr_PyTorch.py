@@ -48,10 +48,11 @@ class SCFpyr_PyTorch(object):
 
     '''
 
-    def __init__(self, height=5, nbands=4, scale_factor=2, device=None):
+    def __init__(self, height=5, nbands=4, scale_factor=2, sub_sample=True, device=None):
         self.height = height  # including low-pass and high-pass
         self.nbands = nbands  # number of orientation bands
         self.scale_factor = scale_factor
+        self.sub_sample = sub_sample  # downsample low pass subband
         self.device = torch.device('cpu') if device is None else device
 
         # Cache constants
@@ -175,10 +176,13 @@ class SCFpyr_PyTorch(object):
             # Don't consider batch_size and imag/real dim
             dims = np.array(lodft.shape[1:3])  
 
-            # Both are tuples of size 2
-            low_ind_start = (np.ceil((dims+0.5)/2) - np.ceil((np.ceil((dims-0.5)/2)+0.5)/2)).astype(int)
-            low_ind_end   = (low_ind_start + np.ceil((dims-0.5)/2)).astype(int)
-
+            if self.sub_sample:
+                # Both are tuples of size 2
+                low_ind_start = (np.ceil((dims+0.5)/2) - np.ceil((np.ceil((dims-0.5)/2)+0.5)/2)).astype(int)
+                low_ind_end   = (low_ind_start + np.ceil((dims-0.5)/2)).astype(int)
+            else:
+                low_ind_start = (0, 0)
+                low_ind_end = dims.astype(int)
             # Subsampling indices
             log_rad = log_rad[low_ind_start[0]:low_ind_end[0],low_ind_start[1]:low_ind_end[1]]
             angle = angle[low_ind_start[0]:low_ind_end[0],low_ind_start[1]:low_ind_end[1]]
