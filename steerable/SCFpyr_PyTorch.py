@@ -82,7 +82,7 @@ class SCFpyr_PyTorch(object):
         assert im_batch.shape[1] == 1, 'Second dimension must be 1 encoding grayscale image'
 
         im_batch = im_batch.squeeze(1)  # flatten channels dim
-        height, width = im_batch.shape[2], im_batch.shape[1] 
+        height, width = im_batch.shape[1], im_batch.shape[2]
         
         # Check whether image size is sufficient for number of levels
         if self.height > int(np.floor(np.log2(min(width, height))) - 2):
