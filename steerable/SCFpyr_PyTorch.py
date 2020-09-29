@@ -177,13 +177,12 @@ class SCFpyr_PyTorch(object):
             dims = np.array(lodft.shape[1:3])  
 
             if self.sub_sample:
-                # Both are tuples of size 2
+                # Both are tuples of size 2, subsampling indices
                 low_ind_start = (np.ceil((dims+0.5)/2) - np.ceil((np.ceil((dims-0.5)/2)+0.5)/2)).astype(int)
                 low_ind_end   = (low_ind_start + np.ceil((dims-0.5)/2)).astype(int)
             else:
                 low_ind_start = (0, 0)
                 low_ind_end = dims.astype(int)
-            # Subsampling indices
             log_rad = log_rad[low_ind_start[0]:low_ind_end[0],low_ind_start[1]:low_ind_end[1]]
             angle = angle[low_ind_start[0]:low_ind_end[0],low_ind_start[1]:low_ind_end[1]]
 
@@ -217,7 +216,7 @@ class SCFpyr_PyTorch(object):
         if self.nbands != len(coeff[1]):
             raise Exception("Unmatched number of orientations")
 
-        height, width = coeff[0].shape[2], coeff[0].shape[1] 
+        height, width = coeff[0].shape[1], coeff[0].shape[2]
         log_rad, angle = math_utils.prepare_grid(height, width)
 
         Xrcos, Yrcos = math_utils.rcosFn(1, -0.5)
@@ -290,14 +289,17 @@ class SCFpyr_PyTorch(object):
         ####################################################################
         
         dims = np.array(coeff[0][0].shape[1:3])
-        
-        lostart = (np.ceil((dims+0.5)/2) - np.ceil((np.ceil((dims-0.5)/2)+0.5)/2)).astype(np.int32)
-        loend = lostart + np.ceil((dims-0.5)/2).astype(np.int32)
+
+        if self.sub_sample:
+            lostart = (np.ceil((dims+0.5)/2) - np.ceil((np.ceil((dims-0.5)/2)+0.5)/2)).astype(np.int32)
+            loend = lostart + np.ceil((dims-0.5)/2).astype(np.int32)
+        else:
+            lostart = (0,0)
+            loend = dims
 
         nlog_rad = log_rad[lostart[0]:loend[0], lostart[1]:loend[1]]
         nangle = angle[lostart[0]:loend[0], lostart[1]:loend[1]]
         YIrcos = np.sqrt(np.abs(1 - Yrcos**2))
-        lomask = pointOp(nlog_rad, YIrcos, Xrcos)
 
         # Filtering
         lomask = pointOp(nlog_rad, YIrcos, Xrcos)
