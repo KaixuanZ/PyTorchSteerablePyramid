@@ -1,3 +1,7 @@
+# Introduction
+
+Based on [PyTorchSteerablePyramid repository by Tomrunia](https://github.com/tomrunia/PyTorchSteerablePyramid) and [perceptual repository by Dzung Nguyen](https://github.com/andreydung/Steerable-filter), this repo implemented a pytorch version of Complex Steerable Pyramid with no sub-sampling, and the reconstruction for both CPU and GPU version. 
+
 # Complex Steerable Pyramid in PyTorch
 
 This is a PyTorch implementation of the Complex Steerable Pyramid described in [Portilla and Simoncelli (IJCV, 2000)](http://www.cns.nyu.edu/~lcv/pubs/makeAbs.php?loc=Portilla99). 
@@ -43,17 +47,6 @@ Performing parallel the CSP decomposition on the GPU using PyTorch results in a 
 
 <a href="/assets/runtime_benchmark.pdf"><img src="/assets/runtime_benchmark.png" width="700px" ></a>
 
-## Installation
-
-Clone and install:
-
-```sh
-git clone https://github.com/tomrunia/PyTorchSteerablePyramid.git
-cd PyTorchSteerablePyramid
-pip install -r requirements.txt
-python setup.py install
-```
-
 ## Requirements
 
 - Python 2.7 or 3.6 (other versions might also work)
@@ -69,6 +62,7 @@ The steerable pyramid depends utilizes `torch.fft` and `torch.ifft` to perform o
 - [The Steerable Pyramid](http://www.cns.nyu.edu/~eero/steerpyr/)
 - [Official implementation: matPyrTools](http://www.cns.nyu.edu/~lcv/software.php)
 - [perceptual repository by Dzung Nguyen](https://github.com/andreydung/Steerable-filter)
+- [PyTorchSteerablePyramid repository by Tomrunia](https://github.com/tomrunia/PyTorchSteerablePyramid)
 
 ## License
 
