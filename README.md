@@ -14,9 +14,11 @@ It uses PyTorch's efficient spectral decomposition layers `torch.fft` and `torch
 
 Two demos: [Sub-sampling](https://github.com/KaixuanZ/PyTorchSteerablePyramid/blob/master/tests/test_SCF.py) and [NoSub-sampling](https://github.com/KaixuanZ/PyTorchSteerablePyramid/blob/master/tests/test_SCFNoSub.py)
 
+You can also check out [PyTorchSteerablePyramid repository by Tomrunia](https://github.com/tomrunia/PyTorchSteerablePyramid) since this repo only has a minor modification (the NoSub-sampling version).
+
 ## Benchmark
 
-Performing parallel the CSP decomposition on the GPU using PyTorch results in a significant speed-up. Increasing the batch size will give faster runtimes. The plot below shows a comprison between the `scipy` versus `torch` implementation as function of the batch size `N` and input signal length. These results were obtained on a powerful Linux desktop with NVIDIA Titan X GPU.
+Performing parallel the CSP decomposition on the GPU using PyTorch results in a significant speed-up. Increasing the batch size will give faster runtimes. The plot below shows a comprison between the `scipy` versus `torch` implementation as function of the batch size `N` and input signal length. These results were obtained on a powerful Linux desktop with NVIDIA Titan X GPU. The comparison is only for sub-sampling version, but should be similar for no sub-sampling version.
 
 <a href="/assets/runtime_benchmark.pdf"><img src="/assets/runtime_benchmark.png" width="700px" ></a>
 
