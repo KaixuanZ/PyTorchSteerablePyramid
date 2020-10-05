@@ -315,3 +315,12 @@ class SCFpyr_PyTorch(object):
         resdft[:,lostart[0]:loend[0], lostart[1]:loend[1],:] = nresdft * lomask
 
         return resdft + orientdft
+
+    def getlist(self, coeff, j=True):
+        if j:
+            # combine real part and imaginary part to one channel
+            straight = [bands[...,0] + 1j*bands[...,1] for scale in coeff[1:-1] for bands in scale]
+        else:
+            straight = [bands for scale in coeff[1:-1] for bands in scale]
+        straight = [coeff[0]] + straight + [coeff[-1]]
+        return straight
