@@ -1,3 +1,7 @@
+# Introduction
+
+Based on [PyTorchSteerablePyramid repository by Tomrunia](https://github.com/tomrunia/PyTorchSteerablePyramid) and [perceptual repository by Dzung Nguyen](https://github.com/andreydung/Steerable-filter), this repo implemented a pytorch version of Complex Steerable Pyramid with no sub-sampling, and the reconstruction for both CPU and GPU version. 
+
 # Complex Steerable Pyramid in PyTorch
 
 This is a PyTorch implementation of the Complex Steerable Pyramid described in [Portilla and Simoncelli (IJCV, 2000)](http://www.cns.nyu.edu/~lcv/pubs/makeAbs.php?loc=Portilla99). 
@@ -8,51 +12,15 @@ It uses PyTorch's efficient spectral decomposition layers `torch.fft` and `torch
 
 ## Usage
 
-In addition to the PyTorch implementation defined in `SCFpyr_PyTorch` the original SciPy version is also included in `SCFpyr` for completeness and comparison. As the GPU implementation highly benefits from parallelization, the `cwt` and `power` methods expect signal batches of shape `[N,H,W]` containing a batch of `N` images of shape `HxW`.
+Two demos: [Sub-sampling](https://github.com/KaixuanZ/PyTorchSteerablePyramid/blob/master/tests/test_SCF.py) and [NoSub-sampling](https://github.com/KaixuanZ/PyTorchSteerablePyramid/blob/master/tests/test_SCFNoSub.py)
 
-```python
-from steerable.SCFpyr_PyTorch import SCFpyr_PyTorch
-import steerable.utils as utils
-
-# Load batch of images [N,1,H,W]
-im_batch_numpy = utils.load_image_batch(...)
-im_batch_torch = torch.from_numpy(im_batch_numpy).to(device)
-
-# Requires PyTorch with MKL when setting to 'cpu' 
-device = torch.device('cuda:0')
-
-# Initialize Complex Steerbale Pyramid
-pyr = SCFpyr_PyTorch(height=5, nbands=4, scale_factor=2, device=device)
-
-# Decompose entire batch of images 
-coeff = pyr.build(im_batch_torch)
-
-# Reconstruct batch of images again
-im_batch_reconstructed = pyr.reconstruct(coeff)
-
-# Visualization
-coeff_single = utils.extract_from_batch(coeff, 0)
-coeff_grid = utils.make_grid_coeff(coeff, normalize=True)
-cv2.imshow('Complex Steerable Pyramid', coeff_grid)
-cv2.waitKey(0)
-```
+You can also check out [PyTorchSteerablePyramid repository by Tomrunia](https://github.com/tomrunia/PyTorchSteerablePyramid) since this repo only has a minor modification (the NoSub-sampling version).
 
 ## Benchmark
 
-Performing parallel the CSP decomposition on the GPU using PyTorch results in a significant speed-up. Increasing the batch size will give faster runtimes. The plot below shows a comprison between the `scipy` versus `torch` implementation as function of the batch size `N` and input signal length. These results were obtained on a powerful Linux desktop with NVIDIA Titan X GPU.
+Performing parallel the CSP decomposition on the GPU using PyTorch results in a significant speed-up. Increasing the batch size will give faster runtimes. The plot below shows a comprison between the `scipy` versus `torch` implementation as function of the batch size `N` and input signal length. These results were obtained on a powerful Linux desktop with NVIDIA Titan X GPU. The comparison is only for sub-sampling version, but should be similar for no sub-sampling version.
 
 <a href="/assets/runtime_benchmark.pdf"><img src="/assets/runtime_benchmark.png" width="700px" ></a>
-
-## Installation
-
-Clone and install:
-
-```sh
-git clone https://github.com/tomrunia/PyTorchSteerablePyramid.git
-cd PyTorchSteerablePyramid
-pip install -r requirements.txt
-python setup.py install
-```
 
 ## Requirements
 
@@ -69,6 +37,7 @@ The steerable pyramid depends utilizes `torch.fft` and `torch.ifft` to perform o
 - [The Steerable Pyramid](http://www.cns.nyu.edu/~eero/steerpyr/)
 - [Official implementation: matPyrTools](http://www.cns.nyu.edu/~lcv/software.php)
 - [perceptual repository by Dzung Nguyen](https://github.com/andreydung/Steerable-filter)
+- [PyTorchSteerablePyramid repository by Tomrunia](https://github.com/tomrunia/PyTorchSteerablePyramid)
 
 ## License
 
