@@ -119,7 +119,7 @@ class SCFpyr_PyTorch(object):
         hi0 = math_utils.batch_ifftshift2d(hi0dft)
         hi0 = torch.ifft(hi0, signal_ndim=2)
         hi0_real = torch.unbind(hi0, -1)[0]
-        coeff.insert(0, hi0_real)
+        coeff.insert(0, hi0_real.unsqueeze(1))
         return coeff
 
     def _build_levels(self, lodft, log_rad, angle, Xrcos, Yrcos, height):
@@ -130,7 +130,7 @@ class SCFpyr_PyTorch(object):
             lo0 = math_utils.batch_ifftshift2d(lodft)
             lo0 = torch.ifft(lo0, signal_ndim=2)
             lo0_real = torch.unbind(lo0, -1)[0]
-            coeff = [lo0_real]
+            coeff = [lo0_real.unsqueeze(1)]
 
         else:
             
@@ -167,10 +167,10 @@ class SCFpyr_PyTorch(object):
 
                 band = math_utils.batch_ifftshift2d(banddft)
                 band = torch.ifft(band, signal_ndim=2)
-                orientations.append(band)
+                orientations.append(band.unsqueeze(1))
 
             ####################################################################
-            ######################## Subsample lowpass #########################
+            ######################## Subsample lowpass #########################buildSCFpyr
             ####################################################################
 
             # Don't consider batch_size and imag/real dim
@@ -316,11 +316,21 @@ class SCFpyr_PyTorch(object):
 
         return resdft + orientdft
 
-    def getlist(self, coeff, j=True):
+    def real2complex(self, coeff):
+        # for torch.tensor, transform real to complex by adding 0*j
+        zero = np.zeros(coeff.shape)
+        zero = torch.from_numpy(zero).to(self.device)
+        coeff = torch.stack([coeff,zero], -1)
+        return torch.view_as_complex(coeff)
+
+    def getlist(self, coeff, j=False):
         if j:
-            # combine real part and imaginary part to one channel
+            # combine real part and imaginary part to one channel [N,C,H,W,2] ==> [N,C,H,W]
+            # for lp and hp, add 0*j to make the output in complex format
+            # but notice that many pytorch function doesn't support complex number
             straight = [bands[...,0] + 1j*bands[...,1] for scale in coeff[1:-1] for bands in scale]
+            straight = [self.real2complex(coeff[0])] + straight + [self.real2complex(coeff[-1])]
         else:
             straight = [bands for scale in coeff[1:-1] for bands in scale]
-        straight = [coeff[0]] + straight + [coeff[-1]]
+            straight = [coeff[0]] + straight + [coeff[-1]]
         return straight
