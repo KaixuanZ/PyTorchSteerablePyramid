@@ -149,7 +149,6 @@ class Metric:
 		win = self.win
 		tmp = np.power(self.compute_L_term(im1, im2) * self.compute_C_term(im1, im2) * \
 			self.compute_C01_term(im1, im2) * self.compute_C10_term(im1, im2), 0.25)
-
 		return tmp.mean()
 
 	def compute_L_term(self, im1, im2):
@@ -192,10 +191,10 @@ class Metric:
 		mu21 = self.conv(im21, window2)
 		mu22 = self.conv(im22, window2)
 
-		sigma11_sq = self.conv(np.abs(im11*im11), window2) - np.abs(mu11*mu11)
-		sigma12_sq = self.conv(np.abs(im12*im12), window2) - np.abs(mu12*mu12)
-		sigma21_sq = self.conv(np.abs(im21*im21), window2) - np.abs(mu21*mu21)
-		sigma22_sq = self.conv(np.abs(im22*im22), window2) - np.abs(mu22*mu22)
+		sigma11_sq = self.conv(np.abs(im11)**2, window2) - np.abs(mu11)**2
+		sigma12_sq = self.conv(np.abs(im12)**2, window2) - np.abs(mu12)**2
+		sigma21_sq = self.conv(np.abs(im21)**2, window2) - np.abs(mu21)**2
+		sigma22_sq = self.conv(np.abs(im22)**2, window2) - np.abs(mu22)**2
 
 		sigma1_cross = self.conv(im11*np.conj(im12), window2) - mu11*np.conj(mu12)
 		sigma2_cross = self.conv(im21*np.conj(im22), window2) - mu21*np.conj(mu22)
