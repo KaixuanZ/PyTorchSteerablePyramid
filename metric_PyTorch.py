@@ -79,7 +79,7 @@ class Metric:
 
 		stsim = map(self.pooling, pyrA, pyrB)
 
-		return torch.mean(list(stsim))
+		return torch.mean(torch.tensor(list(stsim)))
 
 
 	def pooling(self, img1, img2):
@@ -204,8 +204,8 @@ class Metric:
 		sigma1_cross = self.conv2d(self.mul(img11,img12), window2) - self.mul(mu11,mu12)
 		sigma2_cross = self.conv2d(self.mul(img21,img22), window2) - self.mul(mu21,mu22)
 
-		rho1 = (sigma1_cross + self.C)/(torch.sqrt(sigma11_sq)*torch.sqrt(sigma12_sq) + self.C)
-		rho2 = (sigma2_cross + self.C)/(torch.sqrt(sigma21_sq)*torch.sqrt(sigma22_sq) + self.C)
+		rho1 = (sigma1_cross + self.C)/(torch.sqrt(sigma11_sq*sigma12_sq) + self.C)
+		rho2 = (sigma2_cross + self.C)/(torch.sqrt(sigma21_sq*sigma22_sq) + self.C)
 
 		Crossmap = 1 - 0.5*self.abs(rho1 - rho2)
 		return Crossmap
