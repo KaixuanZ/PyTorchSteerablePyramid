@@ -71,7 +71,7 @@ class Metric:
 
 		stsim = map(self.pooling, pyrA, pyrB)
 
-		return np.mean(stsim)
+		return np.mean(list(stsim))
 
 	def STSIM2(self, im1, im2):
 		assert im1.shape == im2.shape
@@ -169,9 +169,9 @@ class Metric:
 		mu1 = np.abs(self.conv(im1, window))
 		mu2 = np.abs(self.conv(im2, window))
 
-		sigma1_sq = self.conv(np.abs(im1*im1), window) - mu1 * mu1
+		sigma1_sq = self.conv(np.abs(im1)**2, window) - mu1 * mu1
 		sigma1 = np.sqrt(sigma1_sq)
-		sigma2_sq = self.conv(np.abs(im2*im2), window) - mu2 * mu2
+		sigma2_sq = self.conv(np.abs(im2)**2, window) - mu2 * mu2
 		sigma2 = np.sqrt(sigma2_sq)
 
 		Cmap = (2*sigma1*sigma2 + C)/(sigma1_sq + sigma2_sq + C)
