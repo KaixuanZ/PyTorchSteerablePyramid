@@ -81,6 +81,46 @@ class Metric:
 
 		return torch.mean(torch.tensor(list(stsim)))
 
+	def STSIM2(self, img1, img2):
+		assert img1.shape == img2.shape
+
+		s = SCFpyr_PyTorch(sub_sample = True, device = self.device)
+		s_nosub = SCFpyr_PyTorch(sub_sample = False, device = self.device)
+
+		pyrA = s.getlist(s.build(img1))
+		pyrB = s.getlist(s.build(img2))
+		stsimg2 = list(map(self.pooling, pyrA, pyrB))
+
+		# Add cross terms
+		bandsAn = s_nosub.build(img1)
+		bandsBn = s_nosub.build(img2)
+
+		Nor = len(bandsAn[1])
+
+		# Accross scale, same orientation
+		for scale in range(2, len(bandsAn) - 1):
+			for orient in range(Nor):
+				img11 = self.abs(bandsAn[scale - 1][orient])
+				img12 = self.abs(bandsAn[scale][orient])
+
+				img21 = self.abs(bandsBn[scale - 1][orient])
+				img22 = self.abs(bandsBn[scale][orient])
+
+				stsimg2.append(self.compute_cross_term(img11, img12, img21, img22).mean())
+
+		# Accross orientation, same scale
+		for scale in range(1, len(bandsAn) - 1):
+			for orient in range(Nor - 1):
+				img11 = self.abs(bandsAn[scale][orient])
+				img21 = self.abs(bandsBn[scale][orient])
+
+				for orient2 in range(orient + 1, Nor):
+					img13 = self.abs(bandsAn[scale][orient2])
+					img23 = self.abs(bandsBn[scale][orient2])
+					stsimg2.append(self.compute_cross_term(img11, img13, img21, img23).mean())
+
+		return torch.mean(torch.tensor(stsimg2))
+
 
 	def pooling(self, img1, img2):
 		tmp = self.compute_L_term(img1, img2) * self.compute_C_term(img1, img2) * self.compute_C01_term(img1, img2) * self.compute_C10_term(img1, img2)
@@ -188,24 +228,24 @@ class Metric:
 		return C10map
 
 	def compute_cross_term(self, img11, img12, img21, img22):
-		# not used yet
+		# inputs are positive real number
 		window2 = 1/(self.win**2)*np.ones((self.win, self.win))
 		window2 = torch.from_numpy(window2).to(self.device).float().unsqueeze(0).unsqueeze(0)
 
-		mu11 = self.conv2d(img11, window2)
-		mu12 = self.conv2d(img12, window2)
-		mu21 = self.conv2d(img21, window2)
-		mu22 = self.conv2d(img22, window2)
+		mu11 = F.conv2d(img11, window2)
+		mu12 = F.conv2d(img12, window2)
+		mu21 = F.conv2d(img21, window2)
+		mu22 = F.conv2d(img22, window2)
 
-		sigma11_sq = self.conv2d(self.mul(img11,img11), window2) - self.mul(mu11,mu11)
-		sigma12_sq = self.conv2d(self.mul(img12,img12), window2) - self.mul(mu12,mu12)
-		sigma21_sq = self.conv2d(self.mul(img21,img21), window2) - self.mul(mu21,mu21)
-		sigma22_sq = self.conv2d(self.mul(img22,img22), window2) - self.mul(mu22,mu22)
-		sigma1_cross = self.conv2d(self.mul(img11,img12), window2) - self.mul(mu11,mu12)
-		sigma2_cross = self.conv2d(self.mul(img21,img22), window2) - self.mul(mu21,mu22)
+		sigma11_sq = F.conv2d(img11**2, window2) - mu11**2
+		sigma12_sq = F.conv2d(img12**2, window2) - mu12**2
+		sigma21_sq = F.conv2d(img21**2, window2) - mu21**2
+		sigma22_sq = F.conv2d(img22**2, window2) - mu22**2
+		sigma1_cross = F.conv2d(img11*img12, window2) - mu11*mu12
+		sigma2_cross = F.conv2d(img21*img22, window2) - mu21*mu22
 
 		rho1 = (sigma1_cross + self.C)/(torch.sqrt(sigma11_sq*sigma12_sq) + self.C)
 		rho2 = (sigma2_cross + self.C)/(torch.sqrt(sigma21_sq*sigma22_sq) + self.C)
 
-		Crossmap = 1 - 0.5*self.abs(rho1 - rho2)
+		Crossmap = 1 - 0.5*torch.abs(rho1 - rho2)
 		return Crossmap
