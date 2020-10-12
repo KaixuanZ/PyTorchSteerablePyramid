@@ -81,7 +81,7 @@ class Metric:
 
 		pyrA = s.getlist(s.buildSCFpyr(im1))
 		pyrB = s.getlist(s.buildSCFpyr(im2))
-		stsim2 = map(self.pooling, pyrA, pyrB)
+		stsim2 = list(map(self.pooling, pyrA, pyrB))
 
 		# Add cross terms
 		bandsAn = s_nosub.buildSCFpyr(im1)
@@ -117,7 +117,6 @@ class Metric:
 		ss = Steerable(5)
 		M, N = im.shape
 		coeff = ss.buildSCFpyr(im)
-
 		f = []
 		# single subband statistics
 		for s in ss.getlist(coeff):
@@ -141,7 +140,7 @@ class Metric:
 				s1 = coeff[height + 1][orient].real
 				s2 = coeff[height + 2][orient].real
 
-				s1 = cv2.resize(s1, (0,0), fx = 0.5, fy = 0.5)
+				s1 = cv2.resize(s1, s2.shape[::-1])
 				f.append((s1*s2).mean()/np.sqrt(s1.var())/np.sqrt(s2.var()))
 		return np.array(f)
 
@@ -149,6 +148,7 @@ class Metric:
 		win = self.win
 		tmp = np.power(self.compute_L_term(im1, im2) * self.compute_C_term(im1, im2) * \
 			self.compute_C01_term(im1, im2) * self.compute_C10_term(im1, im2), 0.25)
+
 		return tmp.mean()
 
 	def compute_L_term(self, im1, im2):
