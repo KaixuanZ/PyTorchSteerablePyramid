@@ -121,6 +121,39 @@ class Metric:
 
 		return torch.mean(torch.tensor(stsimg2))
 
+	def STSIM_M(self, imgs):
+		'''
+		:param imgs: [N,C=1,H,W]
+		:return:
+		'''
+		s =  SCFpyr_PyTorch(sub_sample = True, device = self.device)
+		coeffs = s.build(imgs)
+
+		f = []
+		# single subband statistics
+		for c in s.getlist(coeffs):
+			if len(c.shape)==5:
+				c = c[...,0]	# real part
+			var = torch.var(c, dim = [1,2,3])
+			f.append(torch.mean(c, dim = [1,2,3]))
+			f.append(var)
+			f.append(torch.mean(c[:,:,:,:-1] * c[:,:,:,1:], dim = [1,2,3])/var)
+			f.append(torch.mean(c[:,:,:-1,:] * c[:,:,1:,:], dim = [1,2,3])/var)
+
+		# correlation statistics
+		# across orientations
+		for orients in coeffs[1:-1]:
+			for (c1, c2) in list(itertools.combinations(orients, 2)):
+				f.append(torch.mean(c1[...,0]*c2[...,0], dim = [1,2,3]))
+
+		for orient in range(len(coeffs[1])):
+			for height in range(len(coeffs) - 3):
+				c1 = coeffs[height + 1][orient][...,0]
+				c2 = coeffs[height + 2][orient][...,0]
+
+				c1 = F.interpolate(c1, size=c2.shape[2:])
+				f.append(torch.mean(c1*c2, dim = [1,2,3])/torch.sqrt(torch.var(c1, dim = [1,2,3]))/torch.sqrt(torch.var(c2, dim = [1,2,3])))
+		return torch.stack(f)
 
 	def pooling(self, img1, img2):
 		tmp = self.compute_L_term(img1, img2) * self.compute_C_term(img1, img2) * self.compute_C01_term(img1, img2) * self.compute_C10_term(img1, img2)
