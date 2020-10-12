@@ -79,7 +79,7 @@ class Metric:
 
 		stsim = map(self.pooling, pyrA, pyrB)
 
-		return torch.mean(torch.tensor(list(stsim)))
+		return torch.mean(torch.stack(list(stsim)), dim=0)
 
 	def STSIM2(self, img1, img2):
 		assert img1.shape == img2.shape
@@ -106,7 +106,7 @@ class Metric:
 				img21 = self.abs(bandsBn[scale - 1][orient])
 				img22 = self.abs(bandsBn[scale][orient])
 
-				stsimg2.append(self.compute_cross_term(img11, img12, img21, img22).mean())
+				stsimg2.append(self.compute_cross_term(img11, img12, img21, img22).mean(dim=[1,2,3]))
 
 		# Accross orientation, same scale
 		for scale in range(1, len(bandsAn) - 1):
@@ -117,9 +117,9 @@ class Metric:
 				for orient2 in range(orient + 1, Nor):
 					img13 = self.abs(bandsAn[scale][orient2])
 					img23 = self.abs(bandsBn[scale][orient2])
-					stsimg2.append(self.compute_cross_term(img11, img13, img21, img23).mean())
+					stsimg2.append(self.compute_cross_term(img11, img13, img21, img23).mean(dim=[1,2,3]))
 
-		return torch.mean(torch.tensor(stsimg2))
+		return torch.mean(torch.stack(stsimg2), dim=0)
 
 	def STSIM_M(self, imgs):
 		'''
@@ -157,7 +157,7 @@ class Metric:
 
 	def pooling(self, img1, img2):
 		tmp = self.compute_L_term(img1, img2) * self.compute_C_term(img1, img2) * self.compute_C01_term(img1, img2) * self.compute_C10_term(img1, img2)
-		return torch.mean(tmp**0.25)
+		return torch.mean(tmp**0.25, dim = [1,2,3])
 
 	def compute_L_term(self, img1, img2):
 		mu1 = self.abs(self.conv2d(img1, self.k))
