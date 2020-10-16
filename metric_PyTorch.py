@@ -132,8 +132,7 @@ class Metric:
 		f = []
 		# single subband statistics
 		for c in s.getlist(coeffs):
-			if len(c.shape)==5:
-				c = c[...,0]	# real part
+			c = self.abs(c)
 			var = torch.var(c, dim = [1,2,3])
 			f.append(torch.mean(c, dim = [1,2,3]))
 			f.append(var)
@@ -144,12 +143,14 @@ class Metric:
 		# across orientations
 		for orients in coeffs[1:-1]:
 			for (c1, c2) in list(itertools.combinations(orients, 2)):
-				f.append(torch.mean(c1[...,0]*c2[...,0], dim = [1,2,3]))
+				c1 = self.abs(c1)
+				c2 = self.abs(c2)
+				f.append(torch.mean(c1*c2, dim = [1,2,3]))
 
 		for orient in range(len(coeffs[1])):
 			for height in range(len(coeffs) - 3):
-				c1 = coeffs[height + 1][orient][...,0]
-				c2 = coeffs[height + 2][orient][...,0]
+				c1 = self.abs(coeffs[height + 1][orient])
+				c2 = self.abs(coeffs[height + 2][orient])
 
 				c1 = F.interpolate(c1, size=c2.shape[2:])
 				f.append(torch.mean(c1*c2, dim = [1,2,3])/torch.sqrt(torch.var(c1, dim = [1,2,3]))/torch.sqrt(torch.var(c2, dim = [1,2,3])))
