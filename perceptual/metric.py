@@ -115,30 +115,28 @@ class Metric:
 
 	def STSIM_M(self, im):
 		ss = Steerable(5)
-		M, N = im.shape
 		coeff = ss.buildSCFpyr(im)
 		f = []
+
 		# single subband statistics
 		for s in ss.getlist(coeff):
-			s = s.real
-			shiftx = np.roll(s,1, axis = 0)
-			shifty = np.roll(s,1, axis = 1)
+			s = np.abs(s)
 
 			f.append(np.mean(s))
 			f.append(np.var(s))
-			f.append((shiftx * s).mean()/s.var())
-			f.append((shifty * s).mean()/s.var())
+			f.append((s[:-1,:] * s[1:,:]).mean()/s.var())
+			f.append((s[:,:-1] * s[:,1:]).mean()/s.var())
 
 		# correlation statistics
 		# across orientations
 		for orients in coeff[1:-1]:
 			for (s1, s2) in list(itertools.combinations(orients, 2)):
-				f.append((s1.real*s2.real).mean())
+				f.append((np.abs(s1)*np.abs(s2)).mean())
 
 		for orient in range(len(coeff[1])):
 			for height in range(len(coeff) - 3):
-				s1 = coeff[height + 1][orient].real
-				s2 = coeff[height + 2][orient].real
+				s1 = np.abs(coeff[height + 1][orient])
+				s2 = np.abs(coeff[height + 2][orient])
 
 				s1 = cv2.resize(s1, s2.shape[::-1])
 				f.append((s1*s2).mean()/np.sqrt(s1.var())/np.sqrt(s2.var()))
