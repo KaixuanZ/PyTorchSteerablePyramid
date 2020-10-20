@@ -136,8 +136,9 @@ class Metric:
 			var = torch.var(c, dim = [1,2,3])
 			f.append(torch.mean(c, dim = [1,2,3]))
 			f.append(var)
-			f.append(torch.mean(c[:,:,:,:-1] * c[:,:,:,1:], dim = [1,2,3])/var)
-			f.append(torch.mean(c[:,:,:-1,:] * c[:,:,1:,:], dim = [1,2,3])/var)
+			f.append(torch.mean(c[:, :, :-1, :] * c[:, :, 1:, :], dim=[1, 2, 3]) / var)
+			f.append(torch.mean(c[:, :, :, :-1] * c[:, :, :, 1:], dim=[1, 2, 3]) / var)
+
 
 		# correlation statistics
 		# across orientations
